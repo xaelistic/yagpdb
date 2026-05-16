@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/v2/commands"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/backgroundworkers"
-	"github.com/botlabs-gg/yagpdb/v2/lib/dca"
-	"github.com/botlabs-gg/yagpdb/v2/soundboard/models"
+	"github.com/xaelistic/yagpdb/v2/commands"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/backgroundworkers"
+	"github.com/xaelistic/yagpdb/v2/lib/dca"
+	"github.com/xaelistic/yagpdb/v2/soundboard/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"goji.io/pat"
 )

@@ -1,7 +1,7 @@
 package notifications
 
 import (
-	"github.com/botlabs-gg/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common"
 )
 
 //go:generate sqlboiler --no-hooks psql

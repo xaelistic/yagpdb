@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/v2/analytics"
-	"github.com/botlabs-gg/yagpdb/v2/bot"
-	"github.com/botlabs-gg/yagpdb/v2/commands/models"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/v2/lib/dstate"
+	"github.com/xaelistic/yagpdb/v2/analytics"
+	"github.com/xaelistic/yagpdb/v2/bot"
+	"github.com/xaelistic/yagpdb/v2/commands/models"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/lib/dcmd"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/lib/dstate"
 	"github.com/mediocregopher/radix/v3"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -25,7 +25,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
-	commonmodels "github.com/botlabs-gg/yagpdb/v2/common/models"
+	commonmodels "github.com/xaelistic/yagpdb/v2/common/models"
 )
 
 type ContextKey int

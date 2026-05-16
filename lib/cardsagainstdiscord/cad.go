@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
 	"github.com/pkg/errors"
 )
 

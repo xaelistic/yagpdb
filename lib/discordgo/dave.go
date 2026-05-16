@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo/mls"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo/mls"
 )
 
 var opusSilencePacket = [3]byte{0xF8, 0xFF, 0xFE}

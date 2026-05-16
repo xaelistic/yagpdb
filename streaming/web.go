@@ -8,12 +8,12 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/cplogs"
-	"github.com/botlabs-gg/yagpdb/v2/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/v2/common/pubsub"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/v2/web"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/cplogs"
+	"github.com/xaelistic/yagpdb/v2/common/featureflags"
+	"github.com/xaelistic/yagpdb/v2/common/pubsub"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/web"
 	"goji.io"
 	"goji.io/pat"
 )

@@ -14,29 +14,29 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/botlabs-gg/yagpdb/v2/analytics"
-	"github.com/botlabs-gg/yagpdb/v2/lib/template"
-	"github.com/botlabs-gg/yagpdb/v2/premium"
-	"github.com/botlabs-gg/yagpdb/v2/web"
+	"github.com/xaelistic/yagpdb/v2/analytics"
+	"github.com/xaelistic/yagpdb/v2/lib/template"
+	"github.com/xaelistic/yagpdb/v2/premium"
+	"github.com/xaelistic/yagpdb/v2/web"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/v2/bot"
-	"github.com/botlabs-gg/yagpdb/v2/bot/eventsystem"
-	"github.com/botlabs-gg/yagpdb/v2/commands"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/keylock"
-	"github.com/botlabs-gg/yagpdb/v2/common/multiratelimit"
-	prfx "github.com/botlabs-gg/yagpdb/v2/common/prefix"
-	"github.com/botlabs-gg/yagpdb/v2/common/pubsub"
-	"github.com/botlabs-gg/yagpdb/v2/common/scheduledevents2"
-	"github.com/botlabs-gg/yagpdb/v2/common/templates"
-	"github.com/botlabs-gg/yagpdb/v2/customcommands/models"
-	"github.com/botlabs-gg/yagpdb/v2/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/v2/lib/dstate"
-	"github.com/botlabs-gg/yagpdb/v2/stdcommands/util"
+	"github.com/xaelistic/yagpdb/v2/bot"
+	"github.com/xaelistic/yagpdb/v2/bot/eventsystem"
+	"github.com/xaelistic/yagpdb/v2/commands"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/keylock"
+	"github.com/xaelistic/yagpdb/v2/common/multiratelimit"
+	prfx "github.com/xaelistic/yagpdb/v2/common/prefix"
+	"github.com/xaelistic/yagpdb/v2/common/pubsub"
+	"github.com/xaelistic/yagpdb/v2/common/scheduledevents2"
+	"github.com/xaelistic/yagpdb/v2/common/templates"
+	"github.com/xaelistic/yagpdb/v2/customcommands/models"
+	"github.com/xaelistic/yagpdb/v2/lib/dcmd"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/lib/dstate"
+	"github.com/xaelistic/yagpdb/v2/stdcommands/util"
 	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -133,7 +133,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 
 		// use stripped message content instead of parsed arg data to avoid dcmd
 		// from misinterpreting backslashes and losing spaces in input; see
-		// https://github.com/botlabs-gg/yagpdb/pull/1547
+		// https://github.com/xaelistic/yagpdb/pull/1547
 		code := common.ParseCodeblock(data.TraditionalTriggerData.MessageStrippedPrefix)
 
 		if channel == nil {

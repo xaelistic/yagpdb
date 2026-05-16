@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/backgroundworkers"
-	"github.com/botlabs-gg/yagpdb/v2/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/v2/common/scheduledevents2"
-	"github.com/botlabs-gg/yagpdb/v2/premium/models"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/backgroundworkers"
+	"github.com/xaelistic/yagpdb/v2/common/featureflags"
+	"github.com/xaelistic/yagpdb/v2/common/scheduledevents2"
+	"github.com/xaelistic/yagpdb/v2/premium/models"
 	"github.com/mediocregopher/radix/v3"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )

@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/config"
-	"github.com/botlabs-gg/yagpdb/v2/lib/confusables"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/config"
+	"github.com/xaelistic/yagpdb/v2/lib/confusables"
 	"github.com/google/safebrowsing"
 	"github.com/sirupsen/logrus"
 )

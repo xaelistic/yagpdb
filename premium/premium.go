@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/v2/bot"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/config"
-	"github.com/botlabs-gg/yagpdb/v2/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/v2/common/scheduledevents2"
-	schEventsModels "github.com/botlabs-gg/yagpdb/v2/common/scheduledevents2/models"
-	"github.com/botlabs-gg/yagpdb/v2/common/templates"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/bot"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/config"
+	"github.com/xaelistic/yagpdb/v2/common/featureflags"
+	"github.com/xaelistic/yagpdb/v2/common/scheduledevents2"
+	schEventsModels "github.com/xaelistic/yagpdb/v2/common/scheduledevents2/models"
+	"github.com/xaelistic/yagpdb/v2/common/templates"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
 	"github.com/mediocregopher/radix/v3"
 )
 

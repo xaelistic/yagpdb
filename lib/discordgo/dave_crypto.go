@@ -7,7 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo/mls"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo/mls"
 )
 
 var errNotDAVEFrame = fmt.Errorf("not a DAVE frame")

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/v2/common/pubsub"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/v2/notifications/models"
-	"github.com/botlabs-gg/yagpdb/v2/web"
+	"github.com/xaelistic/yagpdb/v2/common/pubsub"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/notifications/models"
+	"github.com/xaelistic/yagpdb/v2/web"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )

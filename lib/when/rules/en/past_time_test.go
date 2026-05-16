@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/v2/lib/when"
-	"github.com/botlabs-gg/yagpdb/v2/lib/when/rules"
-	"github.com/botlabs-gg/yagpdb/v2/lib/when/rules/en"
+	"github.com/xaelistic/yagpdb/v2/lib/when"
+	"github.com/xaelistic/yagpdb/v2/lib/when/rules"
+	"github.com/xaelistic/yagpdb/v2/lib/when/rules/en"
 )
 
 func TestPastTime(t *testing.T) {

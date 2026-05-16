@@ -4,10 +4,10 @@ import (
 	"slices"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/v2/bot/eventsystem"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/config"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/bot/eventsystem"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/config"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
 	"github.com/mediocregopher/radix/v3"
 )
 

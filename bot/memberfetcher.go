@@ -3,10 +3,10 @@ package bot
 import (
 	"fmt"
 
-	"github.com/botlabs-gg/yagpdb/v2/bot/shardmemberfetcher"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/v2/lib/dstate"
+	"github.com/xaelistic/yagpdb/v2/bot/shardmemberfetcher"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/lib/dstate"
 )
 
 var (

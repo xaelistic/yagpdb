@@ -3,10 +3,10 @@ package timezonecompanion
 //go:generate sqlboiler --no-hooks psql
 
 import (
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/lib/when"
-	"github.com/botlabs-gg/yagpdb/v2/lib/when/rules"
-	"github.com/botlabs-gg/yagpdb/v2/timezonecompanion/trules"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/lib/when"
+	"github.com/xaelistic/yagpdb/v2/lib/when/rules"
+	"github.com/xaelistic/yagpdb/v2/timezonecompanion/trules"
 )
 
 type Plugin struct {

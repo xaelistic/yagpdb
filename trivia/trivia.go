@@ -3,7 +3,7 @@ package trivia
 import (
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common"
 )
 
 type Plugin struct {

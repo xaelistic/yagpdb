@@ -10,12 +10,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/cplogs"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/v2/premium"
-	"github.com/botlabs-gg/yagpdb/v2/twitch/models"
-	"github.com/botlabs-gg/yagpdb/v2/web"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/cplogs"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/premium"
+	"github.com/xaelistic/yagpdb/v2/twitch/models"
+	"github.com/xaelistic/yagpdb/v2/web"
 
 	"github.com/nicklaw5/helix/v2"
 	"github.com/volatiletech/sqlboiler/v4/boil"

@@ -17,13 +17,13 @@ import (
 	"goji.io"
 	"goji.io/pat"
 
-	"github.com/botlabs-gg/yagpdb/v2/bot/botrest"
-	"github.com/botlabs-gg/yagpdb/v2/common"
-	"github.com/botlabs-gg/yagpdb/v2/common/cplogs"
-	"github.com/botlabs-gg/yagpdb/v2/common/pubsub"
-	"github.com/botlabs-gg/yagpdb/v2/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/v2/logs/models"
-	"github.com/botlabs-gg/yagpdb/v2/web"
+	"github.com/xaelistic/yagpdb/v2/bot/botrest"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/common/cplogs"
+	"github.com/xaelistic/yagpdb/v2/common/pubsub"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+	"github.com/xaelistic/yagpdb/v2/logs/models"
+	"github.com/xaelistic/yagpdb/v2/web"
 )
 
 //go:embed assets/logs_control_panel.html
