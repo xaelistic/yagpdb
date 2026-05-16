@@ -1,0 +1,12 @@
+.git
+.github
+.vscode
+.circleci
+*.md
+LICENSE
+CONTRIBUTING.md
+SUGGESTION_TEMPLATE.md
+breaking_changes.md
+info.html
+yagpdb_docker/*.*
+!yagpdb_docker/Dockerfile

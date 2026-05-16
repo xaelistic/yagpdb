@@ -1,146 +1,69 @@
-# YAGPDB - Yet Another General Purpose Discord Bot
+# Everdream Bot — YAGPDB Fork
 
-YAGPDB is a multifunctional, modular Discord bot. It is modular in the sense that for most things plugins exist -- However, some plugins may depend on other plugins.
+Yet Another General Purpose Discord Bot, customized for Everdream.
 
-## Plugins
+## Quick Start (Local Dev)
 
-* YouTube Feed
-* Stream Announcements
-* Server Stats
-* Soundboard
-* Reputation
-* Reminders
-* Reddit Feed
-* Notifications
-* Moderation
-* Logs
-* Custom Commands
-* And More!
+1. **Copy env files**
+   ```bash
+   cp yagpdb_docker/app.env.example yagpdb_docker/app.env
+   cp yagpdb_docker/db.env.example yagpdb_docker/db.env
+   ```
 
-## Useful Links
+2. **Fill in `yagpdb_docker/app.env`** with your Discord bot token, client ID, secret, etc.
 
-* [Homepage](https://yagpdb.xyz)
-* [Support Server](https://discord.gg/4udtcA5)
-* [Help Center](https://help.yagpdb.xyz)
+3. **Set a strong password in `yagpdb_docker/db.env`**
 
-## Selfhosting
+4. **Build and run**
+   ```bash
+   docker compose -f yagpdb_docker/docker-compose.yml up -d --build
+   ```
 
-There are two ways of selfhosting this bot: [standalone](#Hosting-Standalone), or [dockerized](#Hosting-Dockerized).
+5. **Initialize the database**
+   ```bash
+   docker compose -f yagpdb_docker/docker-compose.yml exec db psql -U yagpdb -c "CREATE DATABASE yagpdb;"
+   ```
 
-### General Bot Setup
+6. **Access the web panel** at `http://localhost`
 
-Directions on creating an app and getting credentials may be found
-[here](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token).
+## Deploy to Coolify
 
-YAGPDB does not require you to authorize the bot: all of that will be handled
-via the Control Panel.
+1. Create a new service in Coolify → select "Docker Compose"
+2. Point to this repo (`xaelistic/yagpdb`)
+3. Set the compose file path: `yagpdb_docker/docker-compose.yml`
+4. Add environment variables from `app.env` and `db.env`
+5. Deploy
 
-In addition, you will need to add the following urls to the bot's "REDIRECT URI(S)" configuration:
+## Features
 
-* <https://YourHostNameHere/confirm_login>
-* <https://YourHostNameHere/manage>
+- **Auto-moderation** — spam, invite links, bad words, caps, emoji spam
+- **Reaction roles** — users react to get roles
+- **Custom commands** — `!dream`, `!profile`, etc.
+- **Logging** — message edits/deletes, mod actions, joins/leaves
+- **Auto-role** — assign roles on join
+- **Verification** — rules acceptance gate
+- **Web dashboard** — configure everything from a browser
 
-### HTTPS Options
+## Configuration
 
-YAGPDB supports two main HTTPS setups:
+After first setup, go to `http://your-host` and:
+1. Log in with Discord
+2. Select your server
+3. Configure:
+   - General settings (prefix, etc.)
+   - Auto-mod rules
+   - Reaction roles
+   - Custom commands
+   - Logging channels
+   - Verification
 
-#### 1. **YAGPDB Handles HTTPS (Built-in)**
+## Updating
 
-Let YAGPDB serve HTTPS directly (no reverse proxy):
-
-- Just run with https (Default is true; you may specify this flag explicitly if desired):
-  ```bash
-  ./yagpdb --https=true
-  ```
-- All HTTPS traffic is handled by YAGPDB.
-
-#### 2. **Reverse Proxy Handles HTTPS (Recommended for Production)**
-
-Put YAGPDB behind a reverse proxy (like Nginx, Caddy, etc.):
-
-- Disable YAGPDB's built-in HTTPS server:
-  - `--https=false`: YAGPDB uses plain HTTP internally.
-  - `--extHttps=true`: Tell YAGPDB that HTTPS is handled externally.
-  ```bash
-  ./yagpdb --https=false --extHttps=true
-  ```
-- Your proxy handles HTTPS, YAGPDB talks HTTP.
-
-### Hosting Dockerized
-
-If you have docker-compose installed, that might be the fastest route of getting the bot up and running:
-
-```shell
-git clone https://github.com/botlabs-gg/yagpdb
-cp yagpdb/yagpdb_docker/{app.example.env,app.env}
-cp yagpdb/yagpdb_docker/{db.example.env,db.env}
+```bash
+docker compose -f yagpdb_docker/docker-compose.yml pull
+docker compose -f yagpdb_docker/docker-compose.yml up -d --build
 ```
 
-Edit both env files accordingly. Make sure ports 80 and 443 are accessible on your network and that you have a proper image in `docker-compose.yml`:
+## License
 
-```shell
-docker-compose -f yagpdb/yagpdb_docker/docker-compose.yml up
-```
-
-Alternatively, you can run the bot behind a proxy:
-
-```shell
-docker network create proxy-tier
-docker-compose -p proxy yagpdb/yagpdb_docker/docker-compose.proxy.yml up
-docker-compose -f yagpdb/yagpdb_docker/docker-compose.proxied.yml up
-```
-
-During development, use the `docker-compose.dev.yml` file:
-
-```shell
-docker-compose -f yagpdb/yagpdb_docker/docker-compose.dev.yml up
-```
-
-### Hosting Standalone
-
-#### Requirements
-
-* Golang 1.23 or above
-* PostgreSQL 9.6 or later
-* Redis version 5.x or later
-
-#### Setting Up
-
-Configure Redis and Postgres with your desired settings.
-
-In postgres, create a new user `yagpdb` and database `yagpdb` and grant that user access to that database.
-
-Set up the environment variables with the credentials from the [general setup](#General-Bot-Setup). See the [sample env file](cmd/yagpdb/sampleenvfile) for a list of all enviroment variables.
-
-Afterwards, run the build script located at `/cmd/yagpdb/build.sh` and  start the bot using `./yagpdb`:
-
-```shell
-git clone https://github.com/botlabs-gg/yagpdb
-cd yagpdb/cmd/yagpdb
-sh build.sh
-./yagpdb -all
-```
-
-See `./yagpdb -help` for all usable run flags. The webserver listens by default on ports 5000 (HTTP) and 5001 (HTTPS).
-
-## Databases
-
-YAGPDB uses Redis for light data and caching, and postgresql for most configurations and heavy data, such as logs.
-
-### Updating
-
-Updating with v1 and higher should migrate schemas automatically, but you should always make backups.
-
-Breaking changes can be found in breaking_changes.md, which should always be consulted before updating.
-
-## Contributing
-
-Please view the [contributing guidelines](CONTRIBUTING.md) before submitting any contributions.
-
-See bot/plugin for info about bot plugins, web/plugin for web plugins and feeds/plugin for feeds if you wanna make a new fully fledged plugin.
-
-Expect web, bot and feed instances to be run separately.
-
-For basic utility/fun commands, you can just jam them in stdcommands. Use the existing commands there as an example of how to add one.
-
-Please check CONTRIBUTING.md for further details.
+GPL-3.0 (same as upstream YAGPDB)
