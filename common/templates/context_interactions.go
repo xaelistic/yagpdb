@@ -1,0 +1,452 @@
+package templates
+
+import (
+	"encoding/base64"
+	"reflect"
+	"strings"
+
+	"emperror.dev/errors"
+	"github.com/xaelistic/yagpdb/v2/common"
+	"github.com/xaelistic/yagpdb/v2/lib/discordgo"
+)
+
+var ErrTooManyInteractionResponses = errors.New("cannot respond to an interaction > 1 time; consider using a followup")
+
+const TemplateCustomIDPrefix = "templates-"
+
+func interactionContextFuncs(c *Context) {
+	c.addContextFunc("deleteInteractionResponse", c.tmplDeleteInteractionResponse)
+	c.addContextFunc("editResponse", c.tmplEditInteractionResponse(true))
+	c.addContextFunc("editResponseNoEscape", c.tmplEditInteractionResponse(false))
+	c.addContextFunc("ephemeralResponse", c.tmplEphemeralResponse)
+	c.addContextFunc("getResponse", c.tmplGetResponse)
+	c.addContextFunc("sendModal", c.tmplSendModal)
+	c.addContextFunc("sendResponse", c.tmplSendInteractionResponse(true, false))
+	c.addContextFunc("sendResponseNoEscape", c.tmplSendInteractionResponse(false, false))
+	c.addContextFunc("sendResponseNoEscapeRetID", c.tmplSendInteractionResponse(false, true))
+	c.addContextFunc("sendResponseRetID", c.tmplSendInteractionResponse(true, true))
+	c.addContextFunc("updateMessage", c.tmplUpdateMessage(true))
+	c.addContextFunc("updateMessageNoEscape", c.tmplUpdateMessage(false))
+}
+
+func CreateModalBuilder(customID string, title string, components ...any) (*ModalBuilder, error) {
+	cid, err := validateCustomID(customID, nil)
+	if err != nil {
+		return nil, err
+	}
+	modal := &ModalBuilder{
+		Title:    title,
+		CustomID: cid,
+	}
+	for _, component := range components {
+		_, err := modal.addComponent(component)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return modal, nil
+}
+
+func CreateModal(values ...any) (*discordgo.InteractionResponse, error) {
+	if len(values) < 1 {
+		return &discordgo.InteractionResponse{}, errors.New("no values passed to component builder")
+	}
+
+	var m map[string]interface{}
+	switch t := values[0].(type) {
+	case SDict:
+		m = t
+	case *SDict:
+		m = *t
+	case ModalBuilder:
+		return t.toModal()
+	case *ModalBuilder:
+		return t.toModal()
+	case map[string]any:
+		m = t
+	default:
+		dict, err := StringKeyDictionary(values...)
+		if err != nil {
+			return nil, err
+		}
+		m = dict
+	}
+
+	modalBuilder := &ModalBuilder{
+		CustomID: TemplateCustomIDPrefix + "-0",
+	}
+	_, hasComponentsKey := m["components"]
+	_, hasFieldsKey := m["fields"]
+	if hasComponentsKey && hasFieldsKey {
+		return nil, errors.New("cannot have both 'components' and 'fields' in a cmodal")
+	}
+
+	for key, val := range m {
+		switch key {
+		case "title":
+			modalBuilder.Title = ToString(val)
+		case "custom_id":
+			cid, err := validateCustomID(ToString(val), nil)
+			if err != nil {
+				return nil, err
+			}
+			modalBuilder.CustomID = cid
+		case "components":
+			modalBuilder.Set("components", val)
+
+		//TODO: Deprecate this key in future versions
+		case "fields":
+			if val == nil {
+				continue
+			}
+			v, _ := indirect(reflect.ValueOf(val))
+			if v.Kind() == reflect.Slice {
+				const maxRows = 5 // Discord limitation
+				usedCustomIDs := make(map[string]bool)
+				for i := 0; i < v.Len() && i < maxRows; i++ {
+					f, err := CreateComponent(discordgo.TextInputComponent, v.Index(i).Interface())
+					if err != nil {
+						return nil, err
+					}
+					field := f.(discordgo.TextInput)
+					// validation
+					if field.Style == 0 {
+						field.Style = discordgo.TextInputShort
+					}
+					field.CustomID, err = validateCustomID(field.CustomID, usedCustomIDs)
+					if err != nil {
+						return nil, err
+					}
+					usedCustomIDs[field.CustomID] = true
+					modalBuilder.Components = append(modalBuilder.Components, discordgo.ActionsRow{Components: []discordgo.InteractiveComponent{field}})
+				}
+			} else {
+				f, err := CreateComponent(discordgo.TextInputComponent, val)
+				if err != nil {
+					return nil, err
+				}
+				field := f.(discordgo.TextInput)
+				if field.Style == 0 {
+					field.Style = discordgo.TextInputShort
+				}
+				field.CustomID, err = validateCustomID(field.CustomID, nil)
+				if err != nil {
+					return nil, err
+				}
+				modalBuilder.Components = append(modalBuilder.Components, discordgo.ActionsRow{Components: []discordgo.InteractiveComponent{field}})
+			}
+		default:
+			return nil, errors.New(`invalid key "` + key + `" passed to send message builder`)
+		}
+
+	}
+
+	return modalBuilder.toModal()
+}
+
+func (c *Context) tmplDeleteInteractionResponse(interactionToken, msgID interface{}, delaySeconds ...interface{}) (interface{}, error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return "", ErrTooManyAPICalls
+	}
+
+	_, token := c.tokenArg(interactionToken)
+	if token == "" {
+		return "", errors.New("invalid interaction token")
+	}
+
+	dur := 10
+	if len(delaySeconds) > 0 {
+		dur = int(ToInt64(delaySeconds[0]))
+	}
+
+	// MaybeScheduledDeleteMessage limits delete delays for interaction
+	// responses/followups to 10 seconds, so no need to do it here too
+
+	// guild/channel IDs irrelevant when deleting responses or followups
+	MaybeScheduledDeleteMessage(0, 0, ToInt64(msgID), dur, token)
+
+	return "", nil
+}
+
+func (c *Context) tmplEditInteractionResponse(filterSpecialMentions bool) func(interactionToken, msgID, msg interface{}) (interface{}, error) {
+	return func(interactionToken, msgID, msg interface{}) (interface{}, error) {
+		if c.CurrentFrame.Interaction == nil {
+			return "", errors.New("no interaction data in context")
+		}
+
+		if c.IncreaseCheckGenericAPICall() {
+			return "", ErrTooManyAPICalls
+		}
+
+		_, token := c.tokenArg(interactionToken)
+		if token == "" {
+			return "", errors.New("invalid interaction token")
+		}
+
+		var editOriginal bool
+		mID := ToInt64(msgID)
+		if mID == 0 {
+			editOriginal = true
+		}
+
+		var err error
+		msgSend, err := c.parseMessageInput(msg)
+		if err != nil {
+			return "", err
+		}
+
+		msgEditResponse := msgSend.ToWebhookParams()
+		parseMentions := []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers}
+		var repliedUser bool
+		if !filterSpecialMentions {
+			parseMentions = append(parseMentions, discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone)
+			repliedUser = true
+			msgEditResponse.AllowedMentions = &discordgo.AllowedMentions{Parse: parseMentions, RepliedUser: repliedUser}
+		}
+
+		if editOriginal {
+			_, err = common.BotSession.EditOriginalInteractionResponse(common.BotApplication.ID, token, msgEditResponse)
+			if err == nil && c.CurrentFrame.Interaction != nil && token == c.CurrentFrame.Interaction.Token {
+				c.CurrentFrame.Interaction.RespondedTo = true
+				c.CurrentFrame.Interaction.Deferred = false
+			}
+		} else {
+			_, err = common.BotSession.EditFollowupMessage(common.BotApplication.ID, token, mID, msgEditResponse)
+		}
+
+		if err != nil {
+			return "", err
+		}
+
+		return "", nil
+	}
+}
+
+func (c *Context) tmplEphemeralResponse() string {
+	if c.CurrentFrame.Interaction != nil {
+		c.CurrentFrame.EphemeralResponse = true
+	}
+	return ""
+}
+
+func (c *Context) tmplGetResponse(interactionToken, msgID interface{}) (message *discordgo.Message, err error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	_, token := c.tokenArg(interactionToken)
+	if token == "" {
+		return nil, errors.New("invalid interaction token")
+	}
+
+	var getOriginal bool
+	mID := ToInt64(msgID)
+	if mID == 0 {
+		getOriginal = true
+	}
+
+	if getOriginal {
+		message, err = common.BotSession.GetOriginalInteractionResponse(common.BotApplication.ID, token)
+	} else {
+		message, err = common.BotSession.WebhookMessage(common.BotApplication.ID, token, mID)
+	}
+
+	return
+}
+
+func (c *Context) tmplSendModal(modal interface{}) (interface{}, error) {
+	if c.CurrentFrame.Interaction == nil {
+		return "", errors.New("no interaction data in context")
+	}
+
+	if c.IncreaseCheckGenericAPICall() {
+		return "", ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("modal", 1) {
+		return "", errors.New("cannot send multiple modals to the same interaction")
+	}
+
+	if c.IncreaseCheckCallCounter("interaction_response", 1) {
+		return "", ErrTooManyInteractionResponses
+	}
+
+	var typedModal *discordgo.InteractionResponse
+	var err error
+	switch m := modal.(type) {
+	case ModalBuilder:
+		typedModal, err = m.toModal()
+	case *ModalBuilder:
+		typedModal, err = m.toModal()
+	case *discordgo.InteractionResponse:
+		typedModal = m
+	case discordgo.InteractionResponse:
+		typedModal = &m
+	case SDict, *SDict, map[string]any:
+		typedModal, err = CreateModal(m)
+	default:
+		return "", errors.New("invalid modal passed to sendModal")
+	}
+	if err != nil {
+		return "", err
+	}
+
+	if typedModal.Type != discordgo.InteractionResponseModal {
+		return "", errors.New("invalid modal passed to sendModal")
+	}
+
+	err = common.BotSession.CreateInteractionResponse(c.CurrentFrame.Interaction.ID, c.CurrentFrame.Interaction.Token, typedModal)
+	if err != nil {
+		return "", err
+	}
+	c.CurrentFrame.Interaction.RespondedTo = true
+	return "", nil
+}
+
+func (c *Context) tmplSendInteractionResponse(filterSpecialMentions bool, returnID bool) func(interactionToken interface{}, msg interface{}) (interface{}, error) {
+	return func(interactionToken interface{}, msg interface{}) (interface{}, error) {
+		if c.IncreaseCheckGenericAPICall() {
+			return "", ErrTooManyAPICalls
+		}
+
+		sendType, token := c.tokenArg(interactionToken)
+		if token == "" {
+			return "", errors.New("invalid interaction token")
+		}
+
+		var m *discordgo.Message
+		msgSend, err := c.parseMessageInput(msg)
+		if err != nil {
+			return "", err
+		}
+
+		msgReponse := msgSend.ToInteractionResponseData()
+
+		parseMentions := []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers}
+		var repliedUser bool
+		if !filterSpecialMentions {
+			parseMentions = append(parseMentions, discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone)
+			repliedUser = true
+			msgReponse.AllowedMentions = &discordgo.AllowedMentions{Parse: parseMentions, RepliedUser: repliedUser}
+		}
+		switch sendType {
+		case sendMessageInteractionResponse:
+			if c.IncreaseCheckCallCounter("interaction_response", 1) {
+				return "", ErrTooManyInteractionResponses
+			}
+			err = common.BotSession.CreateInteractionResponse(c.CurrentFrame.Interaction.ID, token, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: msgReponse,
+			})
+			if err == nil {
+				if token == c.CurrentFrame.Interaction.Token {
+					c.CurrentFrame.Interaction.RespondedTo = true
+				}
+				if returnID {
+					m, err = common.BotSession.GetOriginalInteractionResponse(common.BotApplication.ID, token)
+				}
+			}
+		case sendMessageInteractionFollowup:
+			var file *discordgo.File
+			if len(msgReponse.Files) > 0 {
+				file = msgReponse.Files[0]
+			}
+
+			m, err = common.BotSession.CreateFollowupMessage(common.BotApplication.ID, token, &discordgo.WebhookParams{
+				Content:         msgReponse.Content,
+				Components:      msgReponse.Components,
+				Embeds:          msgReponse.Embeds,
+				AllowedMentions: msgReponse.AllowedMentions,
+				Flags:           msgReponse.Flags,
+				File:            file,
+			})
+		}
+
+		if err == nil && returnID {
+			return m.ID, nil
+		}
+
+		return "", err
+	}
+}
+
+func (c *Context) tmplUpdateMessage(filterSpecialMentions bool) func(msg interface{}) (interface{}, error) {
+	return func(msg interface{}) (interface{}, error) {
+		if c.CurrentFrame.Interaction == nil {
+			return "", errors.New("no interaction data in context; consider editMessage or editResponse")
+		}
+
+		if c.IncreaseCheckGenericAPICall() {
+			return "", ErrTooManyAPICalls
+		}
+
+		if c.IncreaseCheckCallCounter("interaction_response", 1) {
+			return "", ErrTooManyInteractionResponses
+		}
+
+		msgSend, err := c.parseMessageInput(msg)
+		if err != nil {
+			return "", err
+		}
+		msgResponseEdit := msgSend.ToInteractionResponseData()
+		parseMentions := []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers}
+		repliedUser := false
+		if !filterSpecialMentions {
+			parseMentions = append(parseMentions, discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone)
+			repliedUser = true
+			msgResponseEdit.AllowedMentions = &discordgo.AllowedMentions{Parse: parseMentions, RepliedUser: repliedUser}
+		}
+
+		err = common.BotSession.CreateInteractionResponse(c.CurrentFrame.Interaction.ID, c.CurrentFrame.Interaction.Token, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseUpdateMessage,
+			Data: msgResponseEdit,
+		})
+
+		if err != nil {
+			return "", err
+		}
+
+		c.CurrentFrame.Interaction.RespondedTo = true
+		return "", nil
+	}
+}
+
+// tokenArg validates the interaction token, or falls back to the one in
+// context if it exists. it returns an empty string on failure of both of
+// these. also returns the sendMessageType.
+func (c *Context) tokenArg(interactionToken interface{}) (sendType sendMessageType, token string) {
+	sendType = sendMessageInteractionFollowup
+	sToken, ok := interactionToken.(string)
+	if !ok {
+		if interactionToken == nil && c.CurrentFrame.Interaction != nil {
+			// no token provided, assume current interaction
+			token = c.CurrentFrame.Interaction.Token
+		} else {
+			return
+		}
+	} else {
+		sToken = strings.TrimSpace(sToken)
+		//rudimentary check for valid token because people don't read docs and will send anything.
+		decoded, err := base64.RawURLEncoding.DecodeString(sToken)
+		if err != nil {
+			decoded, err = base64.URLEncoding.DecodeString(sToken)
+		}
+		if err != nil {
+			return
+		}
+		parts := strings.SplitN(string(decoded), ":", 3)
+		if len(parts) < 3 {
+			return
+		}
+		if parts[0] != "interaction" {
+			return
+		}
+		token = sToken
+	}
+
+	if c.CurrentFrame.Interaction != nil && token == c.CurrentFrame.Interaction.Token && !c.CurrentFrame.Interaction.RespondedTo {
+		sendType = sendMessageInteractionResponse
+	}
+	return
+}

@@ -1,0 +1,50 @@
+volumes:
+  db:
+  redis:
+  cert_cache:
+  soundboard:
+
+networks:
+  default:
+
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: yagpdb_docker/Dockerfile
+    restart: unless-stopped
+    command:
+      - "-all"
+      - "-pa"
+      - "-exthttps=false"
+      - "-https=false"
+    depends_on:
+      - redis
+      - db
+    networks:
+      - default
+    volumes:
+      - cert_cache:/app/cert
+      - soundboard:/app/soundboard
+    ports:
+      - '8080:80'
+    env_file:
+      - app.env
+
+  redis:
+    image: docker.io/redis
+    restart: unless-stopped
+    networks:
+      - default
+    volumes:
+      - redis:/data
+
+  db:
+    image: docker.io/postgres:17
+    restart: unless-stopped
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - default
+    env_file:
+      - db.env
